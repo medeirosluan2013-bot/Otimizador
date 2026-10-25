@@ -112,7 +112,7 @@ val painel = listOf(
     Act("Desfazer tudo", "Volta animações, ponteiro, Hz, resolução e restrições ao padrão.",
         "wm size reset; ${anim("1")}; settings put system pointer_speed 0; settings put secure long_press_timeout 400; $HZOFF; settings put global disable_window_blurs 0; cmd power set-fixed-performance-mode-enabled false; cmd game mode standard %G; cmd notification set_dnd off; " + rb("allow")))
 
-val abas = listOf("Jogo", "Touch", "Tela", "Emulador", "Rede", "Painel", "Sensi", "IA")
+val abas = listOf("Jogo", "Touch", "Tela", "Emulador", "Rede", "Painel", "Mais", "Apps", "Teste", "Sensi", "IA", "Ajuda")
 val todas = listOf(jogo, touch, tela, emu, rede, painel)
 
 class MainActivity : ComponentActivity() {
@@ -124,26 +124,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable fun Chip(t: String, sel: Boolean, on: () -> Unit) = if (sel) Button(on) { Text(t) } else OutlinedButton(on) { Text(t) }
 
-@Composable fun Card2(a: Act, busy: Boolean, go: (String, String) -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(a.t, fontWeight = FontWeight.Bold)
-            Text(a.d, fontSize = 12.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button({ go(a.t, a.on) }, enabled = !busy) { Text("Aplicar") }
-                if (a.off != null) OutlinedButton({ go("Desfazer: ${a.t}", a.off) }, enabled = !busy) { Text("Desfazer") }
-            }
-        }
-    }
-}
-
 @Composable fun Sensi(ctx: Context) {
     val pr = ctx.getSharedPreferences("sensi", 0)
     var f by remember { mutableStateOf(3) }
     var sz by remember { mutableStateOf("6.5") }
     var prof by remember { mutableStateOf("Ranqueada") }
     var out by remember { mutableStateOf("") }
-    Text("Sensi inicial (X e Y)", fontWeight = FontWeight.Bold)
+    Text("Sensi inicial sugerida", fontWeight = FontWeight.Bold)
     Text("Valores de partida pelo seu estilo e tela. Ajuste de 5 em 5 no treino.", fontSize = 12.sp)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { listOf(2, 3, 4).forEach { Chip("$it dedos", f == it) { f = it } } }
     OutlinedTextField(sz, { sz = it }, label = { Text("Tela em polegadas") })
@@ -192,14 +179,14 @@ class MainActivity : ComponentActivity() {
         scope.launch { busy = true; log = "$t..."; val r = withContext(Dispatchers.IO) { sh(c, g) }; log = "$t\n\n$r"; head = info(ctx); busy = false }
     }
     Column(Modifier.fillMaxSize().padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("NOVAX", fontSize = 26.sp, fontWeight = FontWeight.Black, color = Color(0xFFFF2A2A))
+        Banner()
         Text(head, fontSize = 11.sp)
         Text(if (ok) "Shizuku: permissão concedida ✔" else "Shizuku sem permissão", fontSize = 12.sp)
         if (!ok) Button({ if (running() && !granted()) Shizuku.requestPermission(1); ok = granted() }) { Text("Conceder / atualizar permissão") }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Chip("Free Fire", g == FF) { g = FF }; Chip("Free Fire MAX", g == MAX) { g = MAX } }
         ScrollableTabRow(tab, edgePadding = 0.dp) { abas.forEachIndexed { i, n -> Tab(tab == i, { tab = i }, text = { Text(n) }) } }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            when (tab) { 6 -> Sensi(ctx); 7 -> IA(); else -> todas[tab].forEach { Card2(it, busy) { t, c -> go(t, c) } } }
+            when (tab) { 2 -> { Resol(busy) { t, c -> go(t, c) }; Lista(todas[2], busy) { t, c -> go(t, c) } }; 4 -> Lista(redeNova, busy) { t, c -> go(t, c) }; 6 -> { Auto(ctx); Flutuante(ctx); Lista(mais, busy) { t, c -> go(t, c) } }; 7 -> Apps(g); 8 -> Teste(ctx); 9 -> { SensiXY(ctx, busy) { t, c -> go(t, c) }; Sensi(ctx) }; 10 -> IA(); 11 -> Ajuda(ctx); else -> Lista(todas[tab], busy) { t, c -> go(t, c) } }
         }
         HorizontalDivider()
         Box(Modifier.heightIn(max = 130.dp).verticalScroll(rememberScrollState())) { Text(log, fontSize = 11.sp) }
