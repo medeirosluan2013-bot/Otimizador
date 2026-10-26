@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <queries><package android:name="moe.shizuku.privileged.api"/></queries>
     <application android:label="NovaX" android:icon="@drawable/ic_launcher" android:theme="@android:style/Theme.Material.NoActionBar">
-        <activity android:name=".NovaActivity" android:exported="true">
+        <activity android:name=".Nova2Activity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
