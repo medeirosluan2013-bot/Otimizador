@@ -245,4 +245,44 @@ class Nova2Activity : ComponentActivity() {
                     Text("${list.size} funções", fontSize = 11.sp, color = Color(0xFF9A9AA8))
                     list.forEach { a -> N2Card(a, ac, a.t in favs, { toggle(a.t) }, busy) { t, c -> go(t, c) } }
                 }
-                2 -> { SensiPro(ctx, ac); SensiXY(ctx
+                                2 -> { SensiPro(ctx, ac); SensiXY(ctx, busy) { t, c -> go(t, c) } }
+                3 -> {
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf("Apps", "Teste", "Bolinha", "Modo auto", "Resolução", "Ajuda").forEach { Chip(it, sub == it) { sub = it } }
+                    }
+                    when (sub) {
+                        "Apps" -> Apps(g)
+                        "Teste" -> Teste(ctx)
+                        "Bolinha" -> Flutuante(ctx)
+                        "Modo auto" -> Auto(ctx)
+                        "Resolução" -> Resol(busy) { t, c -> go(t, c) }
+                        else -> Ajuda(ctx)
+                    }
+                }
+                else -> {
+                    Text("🎨 Cor do app", fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        n2Themes.forEachIndexed { i, c ->
+                            Box(Modifier.size(44.dp).clip(CircleShape).background(c).then(if (i == ai) Modifier.border(3.dp, Color.White, CircleShape) else Modifier).clickable { setAi(i) })
+                        }
+                    }
+                    Text("NovaX 2 · ${n2All.values.sumOf { it.size }} funções", fontSize = 12.sp, color = Color(0xFF9A9AA8))
+                    Text("Os resultados variam por aparelho. Se algo ficar estranho, use Desfazer tudo na tela inicial.", fontSize = 12.sp, color = Color(0xFF9A9AA8))
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+        if (busy || log.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFF16161F)).padding(10.dp)) {
+            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = ac)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f).heightIn(max = 110.dp).verticalScroll(rememberScrollState())) { Text(log, fontSize = 11.sp) }
+                TextButton({ log = "" }) { Text("✕") }
+            }
+        }
+        NavigationBar(containerColor = Color(0xFF101016)) {
+            listOf("🏠" to "Início", "⚡" to "Funções", "🎯" to "Sensi", "🧰" to "Mais", "🎨" to "Ajustes").forEachIndexed { i, (e, n) ->
+                NavigationBarItem(selected = tab == i, onClick = { tab = i }, icon = { Text(e, fontSize = 20.sp) }, label = { Text(n, fontSize = 10.sp) })
+            }
+        }
+    }
+}
